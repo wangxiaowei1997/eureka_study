@@ -43,6 +43,8 @@ import static org.mockito.Mockito.when;
  * which is essential to verifying content encoding/decoding with different format types (JSON vs XML, compressed vs
  * uncompressed).
  *
+ * 在这个测试类里,他会将eureka 启动起来，然后模拟eureka 客户端(服务) 去发送各种请求到eureka 注册中心,去测试各种功能
+ *
  * @author Tomasz Bak
  */
 public class EurekaClientServerRestIntegrationTest {
@@ -232,15 +234,29 @@ public class EurekaClientServerRestIntegrationTest {
     }
 
     private static void startServer() throws Exception {
-        File warFile = findWar();
-
+//        File warFile = findWar();
+//
+//        server = new Server(8080);
+//
+//        WebAppContext webapp = new WebAppContext();
+//        webapp.setContextPath("/");
+//        webapp.setWar(warFile.getAbsolutePath());
+//        server.setHandler(webapp);
+//
+//        server.start();
+//
+//        eurekaServiceUrl = "http://localhost:8080/v2";
+        //eurekaServer其实就是一个web应用
+        //不是使用war包去启动 而是我们之间自己去启动 提高启动效率
+        //原来是打好war包然后让jetty去启动  打包的时候会把resource里的东西打到war包里
+        //这里改成了代码层面上让jetty启动
         server = new Server(8080);
 
-        WebAppContext webapp = new WebAppContext();
-        webapp.setContextPath("/");
-        webapp.setWar(warFile.getAbsolutePath());
-        server.setHandler(webapp);
-
+        WebAppContext webAppCtx = new WebAppContext(new File("./eureka-server/src/main/webapp").getAbsolutePath(), "/");
+        webAppCtx.setDescriptor(new File("./eureka-server/src/main/webapp/WEB-INF/web.xml").getAbsolutePath());
+        webAppCtx.setResourceBase(new File("./eureka-server/src/main/resources").getAbsolutePath());
+        webAppCtx.setClassLoader(Thread.currentThread().getContextClassLoader());
+        server.setHandler(webAppCtx);
         server.start();
 
         eurekaServiceUrl = "http://localhost:8080/v2";

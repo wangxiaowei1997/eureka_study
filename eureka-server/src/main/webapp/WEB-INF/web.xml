@@ -8,6 +8,7 @@
     <listener-class>com.netflix.eureka.EurekaBootStrap</listener-class>
   </listener>
 
+<!--  作为一个web 应用 eurekaServer最个续保的就是这几个filte-->
   <filter>
     <filter-name>statusFilter</filter-name>
     <filter-class>com.netflix.eureka.StatusFilter</filter-class>
@@ -67,6 +68,7 @@
   </filter-mapping>
   -->
 
+<!--  gzipEncoding 仅仅对部分特殊的请求生效-->
   <filter-mapping>
     <filter-name>gzipEncodingEnforcingFilter</filter-name>
     <url-pattern>/v2/apps</url-pattern>
