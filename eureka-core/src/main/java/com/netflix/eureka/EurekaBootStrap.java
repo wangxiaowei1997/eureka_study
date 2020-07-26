@@ -106,6 +106,7 @@ public class EurekaBootStrap implements ServletContextListener {
      *
      * @see
      * javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
+     * 这个方法  是整个eureka Server启动的入口
      */
     @Override
     public void contextInitialized(ServletContextEvent event) {
@@ -123,10 +124,17 @@ public class EurekaBootStrap implements ServletContextListener {
 
     /**
      * Users can override to initialize the environment themselves.
+     * 初始化环境 设置了单例模式的配置管理器
+     * 管理eureka自己的所有的配置
+     * 读取配置文件里的配置到内存里 供后续的eureka-server来使用
      */
     protected void initEurekaEnvironment() throws Exception {
         logger.info("Setting the eureka configuration..");
 
+        //getConfigInstance() 点进去看 这里的代码就用到了单例模式 双重检查锁定
+        //变量用volatile修饰  经典的单例模式
+        //在开源的项目里 人家用的比较多的还是double-check + volatile(光是double-check 不能保证线程安全)
+        //主要是可见性的问题  线程1已经创建完了对象 但是线程2的本地缓存里对象还是null的  又去创建了一次
         String dataCenter = ConfigurationManager.getConfigInstance().getString(EUREKA_DATACENTER);
         if (dataCenter == null) {
             logger.info("Eureka data center value eureka.datacenter is not set, defaulting to default");
@@ -134,6 +142,7 @@ public class EurekaBootStrap implements ServletContextListener {
         } else {
             ConfigurationManager.getConfigInstance().setProperty(ARCHAIUS_DEPLOYMENT_DATACENTER, dataCenter);
         }
+        //初始化eureka运行的环境 如果你没有去配置  默认为TEST 环境
         String environment = ConfigurationManager.getConfigInstance().getString(EUREKA_ENVIRONMENT);
         if (environment == null) {
             ConfigurationManager.getConfigInstance().setProperty(ARCHAIUS_DEPLOYMENT_ENVIRONMENT, TEST);
